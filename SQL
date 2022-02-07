@@ -1,0 +1,130 @@
+1.
+Nabywców o Twoim imieniu
+SELECT *
+FROM Nabywcy
+WHERE ImieNabywcy='Tomasz';
+2.
+Nabywców o Twoim nazwisku
+SELECT *
+FROM Nabywcy
+WHERE NazwiskoNabywcy='Kuceł';
+3
+ImieNazwisko Nabywców o Twoim imieniu
+SELECT ImieNazwisko
+FROM Nabywcy
+WHERE ImieNabywcy = 'Tomasz';
+
+ImieNazwisko nabywców z Twojej miejscowości
+SELECT ImieNazwisko
+FROM Nabywcy
+WHERE Miejscowosc = 'Budzyń';
+ImieNazwisko nabywców z Twojej gminy
+SELECT Nabywcy.ImieNazwisko, Miejscowosci.IDMiejscowosci, Gminy.Gmina
+FROM (Gminy INNER JOIN Miejscowosci ON Gminy.IDGminy = Miejscowosci.Gmina) INNER JOIN (Nabywcy INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Nabywcy.IDNabywcy = Faktury.Nabywca) ON Miejscowosci.IDMiejscowosci = Nabywcy.Miejscowosc
+WHERE (((Gminy.Gmina)="Księżpol"));
+
+
+
+
+ImieNazwisko nabywców z Twojego powiatu
+SELECT Nabywcy.ImieNazwisko, Miejscowosci.IDMiejscowosci, Powiaty.Powiat
+FROM (Powiaty INNER JOIN Gminy ON Powiaty.IDPowiatu = Gminy.Powiat) INNER JOIN (Miejscowosci INNER JOIN (Nabywcy INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Nabywcy.IDNabywcy = Faktury.Nabywca) ON Miejscowosci.IDMiejscowosci = Nabywcy.Miejscowosc) ON Gminy.IDGminy = Miejscowosci.Gmina
+WHERE (((Powiaty.Powiat)="biłgorajski"));
+
+ImieNazwisko nabywców z Twojego powiatu o Twoim imieniu
+SELECT Nabywcy.ImieNabywcy, Miejscowosci.IDMiejscowosci, Powiaty.Powiat
+FROM (Powiaty INNER JOIN Gminy ON Powiaty.IDPowiatu = Gminy.Powiat) INNER JOIN (Miejscowosci INNER JOIN (Nabywcy INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Nabywcy.IDNabywcy = Faktury.Nabywca) ON Miejscowosci.IDMiejscowosci = Nabywcy.Miejscowosc) ON Gminy.IDGminy = Miejscowosci.Gmina
+WHERE (((Nabywcy.ImieNabywcy)="Tomasz") AND ((Powiaty.Powiat)="biłgorajski"));
+
+ImieNazwisko nabywców z Twojego województwa o Twoim imieniu.
+SELECT Nabywcy.ImieNazwisko, Wojewodztwa.Wojewodztwo
+FROM Wojewodztwa INNER JOIN ((Powiaty INNER JOIN Gminy ON Powiaty.IDPowiatu = Gminy.Powiat) INNER JOIN (Miejscowosci INNER JOIN (Nabywcy INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Nabywcy.IDNabywcy = Faktury.Nabywca) ON Miejscowosci.IDMiejscowosci = Nabywcy.Miejscowosc) ON Gminy.IDGminy = Miejscowosci.Gmina) ON Wojewodztwa.IDWojewodztwa = Powiaty.Wojewodztwo
+WHERE (((Nabywcy.ImieNazwisko)="Tomasz Kuceł") AND ((Wojewodztwa.Wojewodztwo)="lubelskie"));
+
+
+
+Policz:
+1.
+Nabywców o Twoim imieniu
+SELECT COUNT (*) AS IleTomaszów
+FROM Nabywcy
+WHERE ImieNabywcy='Tomasz';
+Nabywców o Twoim nazwisku
+SELECT COUNT (*)
+FROM Nabywcy
+WHERE NazwiskoNabywcy='Kuceł';
+2.
+Nabywców z Twojej miejscowości
+SELECT Count(Nabywcy.ImieNazwisko) AS 'Liczba Nabywcow z mojej miejscowosci'
+FROM (Powiaty INNER JOIN Gminy ON Powiaty.IDPowiatu = Gminy.Powiat) INNER JOIN (Miejscowosci INNER JOIN (Nabywcy INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Nabywcy.IDNabywcy = Faktury.Nabywca) ON Miejscowosci.IDMiejscowosci = Nabywcy.Miejscowosc) ON Gminy.IDGminy = Miejscowosci.Gmina
+WHERE (((Powiaty.Powiat)="biłgorajski"));
+
+Nabywców z Twojej gminy
+Nabywców z Twojego województwa o imieniu na pierwszą literę Twojego imienia
+SELECT Count(Nabywcy.IDNabywcy) AS IleNabywcow
+FROM ((Wojewodzwa INNER JOIN Powiaty ON Wojewodztwo.IDWojewodztwa = Powiaty.Wojewodztwo) INNER JOIN Gminy
+
+Oblicz
+1.
+Sumę zakupów netto
+SELECT Sum(Round([Cena]*[Ilosc])) AS SumaWszystkichZakupowNetto
+FROM Towary INNER JOIN FakturaTowary ON Towary.IDTowaru = FakturaTowary.Towar;
+
+Sumę zakupów brutto
+SELECT Sum(Round([Cena]*[Ilosc]*(1+[VAT]))) AS SumaWszystkichZakupowNetto
+FROM Towary INNER JOIN FakturaTowary ON Towary.IDTowaru = FakturaTowary.Towar;
+
+Średnią kwotę brutto każdej faktury
+SELECT Faktury.IDFaktury, Round(Avg(Round([Ilosc]*[Cena]*(1+[VAT]),2)),2) AS KwotaBrutto
+FROM Towary INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Towary.IDTowaru = FakturaTowary.Towar
+GROUP BY Faktury.IDFaktury;
+
+Średnią kwotę wszystkich faktury
+Select Round(Avg(KwotaBruttoNaFakturze),2) As SredniaKwotaBrutto From (SELECT Faktury.IDFaktury, Round(Avg(Round([Ilosc]*[Cena]*(1+[VAT]),2)),2) AS KwotaBrutto
+FROM Towary INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Towary.IDTowaru = FakturaTowary.Towar
+GROUP BY Faktury.IDFaktury);
+
+Maksymalną i minimalną kwotę brutto (Cena*Ilosc*(1+[VAT]) poszczególnych towarów na każdej fakturze
+Select Max(wartoscbrutto) As WartoscMaxBrutto, Min(wartoscbrutto) As WartoscMinBrutto FROM (SELECT Faktury.IDFaktury, Sum(Round([Cena]*[Ilosc]*(1+[VAT]),2)) AS wartoscbrutto
+FROM Towary INNER JOIN (Faktury INNER JOIN FakturaTowary ON Faktury.IDFaktury = FakturaTowary.Faktura) ON Towary.IDTowaru = FakturaTowary.Towar
+GROUP BY Faktury.IDFaktury, FakturaTowary.Ilosc);
+
+2.
+Sumę zakupów brutto nabywców o Twoim imieniu
+
+Sumę zakupów brutto nabywców o Twoim imieniu na pierwszą literę Twojego imienia
+
+Sumę zakupów brutto Nabywców z Twojej miejscowości
+Sumę zakupów hetto Nabywców z Twojej gminy
+Sumę zakupów brutto Nabywców z Twojego województwa o Twoim imieniu
+
+Utwórz tabelę. Wstaw i usuń dane:
+Tabelę o swoim ImieNazwisko z polami:
+IDImieNazwisko
+Imie
+Nazwisko
+SredniaOcen
+CREATE TABLE TomaszKucel 
+	(IDTomaszKucel integer primary key,
+	Imie varchar(30),
+	Nazwisko varchar(30),
+	SredniaOcen Single);
+
+
+
+Wstaw dane trzech osób do swojej tabeli:
+INSERT INTO TomaszKucel (IDTomaszKucel, Imie, Nazwisko, SredniaOcen)
+VALUES ('1', 'Tomasz', 'Kuceł', '4,2'),
+   
+Usuń dane jednej osoby
+DELETE FROM TomaszKucel
+WHERE Imie = 'Tomasz'
+Zmień tabelę i uzupełnij dane:
+Dodaj pole DataUrodzenia
+ALTER TABLE TomaszKucel
+ADD Column DataUrodzenia date;
+
+Zaktualizuj daty urodzenia osób w swojej tabeli
+UPDATE ImieNazwisko
+SET DataUrodzenia = ‘2000-07-19’ 
+WHERE Imie = ‘Tomasz’
